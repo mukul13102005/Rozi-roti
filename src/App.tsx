@@ -215,17 +215,6 @@ export default function App() {
 
   const renderCustomerSite = () => (
     <div className="min-h-screen flex flex-col">
-      {/* Announcement Bar */}
-      <div className="bg-brand-maroon text-white text-center py-2 text-xs font-medium tracking-widest uppercase relative overflow-hidden">
-        <motion.div 
-          animate={{ x: ['100%', '-100%'] }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'linear' }}
-          className="whitespace-nowrap"
-        >
-          ✨ Free Shipping on orders above ₹2999 | Use Code: RATNA10 for 10% Off | New Bridal Collection is Live! ✨
-        </motion.div>
-      </div>
-
       {/* Navbar */}
       <Navbar 
         loyaltyPoints={loyaltyPoints}
@@ -536,67 +525,123 @@ export default function App() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-brand-dark text-white pt-20 pb-10">
-        <div className="max-w-7xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-20">
-          <div>
-            <h1 className="text-3xl font-serif font-bold text-brand-gold tracking-tighter mb-2">RoziRoti</h1>
-            <span className="text-[10px] uppercase tracking-[0.3em] text-white/60 font-bold block mb-6">By Ratna</span>
-            <p className="text-white/50 text-sm leading-relaxed mb-8">
-              Surat's premier destination for luxury ethnic wear. We blend traditional craftsmanship with contemporary designs to create masterpieces for the modern woman.
-            </p>
-            <div className="flex space-x-4">
-              {[Instagram, Facebook, Twitter].map((Icon, i) => (
-                <button key={i} className="w-10 h-10 rounded-full bg-white/5 flex items-center justify-center hover:bg-brand-gold hover:text-brand-dark transition-all">
-                  <Icon size={18} />
+      {/* Footer - MBA & Luxury Optimized */}
+      <footer className="bg-brand-dark text-white pt-24 pb-12 relative overflow-hidden">
+        {/* Subtle Background Pattern */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+          <div className="absolute top-0 left-0 w-full h-full" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, #D4AF37 1px, transparent 0)', backgroundSize: '40px 40px' }} />
+        </div>
+
+        <div className="max-w-7xl mx-auto px-4 relative z-10">
+          {/* Newsletter Section - High Conversion */}
+          <div className="flex flex-col lg:flex-row items-center justify-between mb-20 p-10 rounded-[40px] bg-white/5 border border-white/10 backdrop-blur-md">
+            <div className="mb-8 lg:mb-0 text-center lg:text-left">
+              <h3 className="text-3xl font-serif text-brand-gold mb-2">Join the Elite Circle</h3>
+              <p className="text-white/50 text-sm max-w-md">Get early access to new drops, styling tips, and exclusive rewards. No spam, just elegance.</p>
+            </div>
+            <div className="w-full lg:w-auto">
+              <div className="flex flex-col sm:flex-row gap-4">
+                <input 
+                  type="email" 
+                  placeholder="your@email.com" 
+                  className="bg-white/5 border border-white/10 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-brand-gold text-sm w-full sm:w-80"
+                />
+                <button className="maroon-gradient text-white px-8 py-4 rounded-2xl font-bold uppercase tracking-widest text-xs hover:scale-105 transition-all shadow-lg">
+                  Subscribe
                 </button>
-              ))}
+              </div>
+              <p className="text-[10px] text-white/20 mt-4 text-center lg:text-left">By subscribing, you agree to our Privacy Policy.</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-12 mb-20">
+            <div className="col-span-2 lg:col-span-2">
+              <div className="flex flex-col mb-6">
+                <h2 className="text-3xl font-serif font-bold text-brand-gold tracking-tighter">RoziRoti</h2>
+                <span className="text-[10px] uppercase tracking-[0.4em] text-white/40 font-bold">By Ratna</span>
+              </div>
+              <p className="text-white/40 text-xs leading-relaxed max-w-sm mb-8">
+                Crafting timeless elegance in the heart of Surat. We bring you the finest handpicked ethnic wear that celebrates the spirit of the modern Indian woman.
+              </p>
+              <div className="flex space-x-4">
+                {[Instagram, Facebook, Twitter].map((Icon, i) => (
+                  <button key={i} className="w-10 h-10 rounded-full border border-white/10 flex items-center justify-center hover:bg-brand-gold hover:text-brand-dark hover:border-brand-gold transition-all">
+                    <Icon size={16} />
+                  </button>
+                ))}
+              </div>
+            </div>
+            
+            <div>
+              <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] mb-8 text-brand-gold">Collections</h4>
+              <ul className="space-y-4 text-xs text-white/40">
+                {['New Arrivals', 'Cotton Sarees', 'Silk Sarees', 'Wedding Store', 'Bestsellers'].map(item => (
+                  <li key={item} className="hover:text-brand-gold cursor-pointer transition-colors flex items-center group">
+                    <span className="w-0 h-px bg-brand-gold mr-0 group-hover:w-3 group-hover:mr-2 transition-all"></span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div>
+              <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] mb-8 text-brand-gold">Customer Care</h4>
+              <ul className="space-y-4 text-xs text-white/40">
+                {['Track Order', 'Shipping Policy', 'Returns', 'Size Guide', 'FAQs'].map(item => (
+                  <li key={item} className="hover:text-brand-gold cursor-pointer transition-colors flex items-center group">
+                    <span className="w-0 h-px bg-brand-gold mr-0 group-hover:w-3 group-hover:mr-2 transition-all"></span>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+            </div>
+
+            <div className="col-span-2 md:col-span-1">
+              <h4 className="font-bold text-[10px] uppercase tracking-[0.2em] mb-8 text-brand-gold">Contact</h4>
+              <ul className="space-y-6 text-xs text-white/40">
+                <li className="flex items-start">
+                  <MapPin className="mr-3 text-brand-gold shrink-0" size={14} />
+                  <span>Textile Market, Surat, GJ</span>
+                </li>
+                <li className="flex items-center">
+                  <Phone className="mr-3 text-brand-gold shrink-0" size={14} />
+                  <span>+91 98765 43210</span>
+                </li>
+                <li className="flex items-center">
+                  <Mail className="mr-3 text-brand-gold shrink-0" size={14} />
+                  <span>hello@roziroti.com</span>
+                </li>
+              </ul>
             </div>
           </div>
           
-          <div>
-            <h4 className="font-bold text-sm uppercase tracking-widest mb-8 text-brand-gold">Collections</h4>
-            <ul className="space-y-4 text-sm text-white/50">
-              {['Cotton Sarees', 'Silk Sarees', 'Banarasi Collection', 'Stitched Suits', 'Wedding Store'].map(item => (
-                <li key={item} className="hover:text-brand-gold cursor-pointer transition-colors">{item}</li>
-              ))}
-            </ul>
-          </div>
+          <div className="pt-12 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8">
+            <div className="flex flex-col items-center md:items-start gap-2">
+              <p className="text-[10px] text-white/20 uppercase tracking-widest">© {new Date().getFullYear()} RoziRoti by Ratna. All Rights Reserved.</p>
+              <p className="text-[9px] text-white/10 italic">Handcrafted with love in India</p>
+            </div>
 
-          <div>
-            <h4 className="font-bold text-sm uppercase tracking-widest mb-8 text-brand-gold">Customer Care</h4>
-            <ul className="space-y-4 text-sm text-white/50">
-              {['Track Order', 'Shipping Policy', 'Return & Exchange', 'Size Guide', 'FAQs'].map(item => (
-                <li key={item} className="hover:text-brand-gold cursor-pointer transition-colors">{item}</li>
-              ))}
-            </ul>
-          </div>
+            {/* Trust Badges - MBA Strategy */}
+            <div className="flex items-center space-x-6 opacity-30 grayscale hover:grayscale-0 transition-all duration-500">
+              <div className="flex items-center space-x-1">
+                <ShieldCheck size={14} />
+                <span className="text-[8px] font-bold uppercase tracking-widest">Secure Checkout</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Truck size={14} />
+                <span className="text-[8px] font-bold uppercase tracking-widest">Express Shipping</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <RotateCcw size={14} />
+                <span className="text-[8px] font-bold uppercase tracking-widest">Easy Returns</span>
+              </div>
+            </div>
 
-          <div>
-            <h4 className="font-bold text-sm uppercase tracking-widest mb-8 text-brand-gold">Visit Us</h4>
-            <ul className="space-y-6 text-sm text-white/50">
-              <li className="flex items-start">
-                <MapPin className="mr-3 text-brand-gold shrink-0" size={18} />
-                <span>123 Fashion Street, Textile Market, Surat, Gujarat 395003</span>
-              </li>
-              <li className="flex items-center">
-                <Phone className="mr-3 text-brand-gold shrink-0" size={18} />
-                <span>+91 98765 43210</span>
-              </li>
-              <li className="flex items-center">
-                <Mail className="mr-3 text-brand-gold shrink-0" size={18} />
-                <span>hello@roziroti.com</span>
-              </li>
-            </ul>
-          </div>
-        </div>
-        
-        <div className="max-w-7xl mx-auto px-4 pt-10 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-6">
-          <p className="text-xs text-white/30">© {new Date().getFullYear()} RoziRoti by Ratna. All Rights Reserved.</p>
-          <div className="flex space-x-6">
-            {['Privacy Policy', 'Terms of Service', 'Sitemap'].map(item => (
-              <button key={item} className="text-[10px] uppercase tracking-widest text-white/30 hover:text-white transition-colors">{item}</button>
-            ))}
+            <div className="flex space-x-6">
+              {['Privacy', 'Terms', 'Sitemap'].map(item => (
+                <button key={item} className="text-[9px] uppercase tracking-widest text-white/20 hover:text-white transition-colors">{item}</button>
+              ))}
+            </div>
           </div>
         </div>
       </footer>
@@ -610,6 +655,92 @@ export default function App() {
       <button className="fixed bottom-8 right-8 bg-[#25D366] text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform z-40">
         <Phone size={24} />
       </button>
+
+      {/* Mobile Menu Drawer */}
+      <AnimatePresence>
+        {isMenuOpen && (
+          <>
+            <motion.div 
+              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+              onClick={() => setIsMenuOpen(false)}
+              className="fixed inset-0 bg-brand-dark/60 backdrop-blur-sm z-[80]"
+            />
+            <motion.div 
+              initial={{ x: '-100%' }} animate={{ x: 0 }} exit={{ x: '-100%' }}
+              transition={{ type: 'spring', damping: 25, stiffness: 200 }}
+              className="fixed top-0 left-0 h-full w-[85%] max-w-sm bg-brand-beige shadow-2xl z-[90] flex flex-col"
+            >
+              <div className="p-6 border-b border-brand-gold/20 flex justify-between items-center">
+                <div className="flex flex-col">
+                  <h3 className="text-2xl font-serif text-brand-maroon">RoziRoti</h3>
+                  <span className="text-[9px] uppercase tracking-[0.3em] text-brand-gold font-bold">By Ratna</span>
+                </div>
+                <button onClick={() => setIsMenuOpen(false)} className="p-2 hover:bg-brand-gold/10 rounded-full">
+                  <X size={24} />
+                </button>
+              </div>
+
+              <div className="flex-1 overflow-y-auto p-6">
+                <div className="space-y-8">
+                  <div>
+                    <h4 className="text-[10px] uppercase tracking-[0.2em] text-brand-gold font-bold mb-4">Shop Categories</h4>
+                    <div className="grid grid-cols-1 gap-4">
+                      {['New Arrivals', 'Cotton Sarees', 'Silk Sarees', 'Suits', 'Wedding'].map((item) => (
+                        <button 
+                          key={item}
+                          onClick={() => { setSelectedCategory(item as any); setIsMenuOpen(false); }}
+                          className="flex items-center justify-between p-4 bg-white rounded-xl border border-brand-gold/10 hover:border-brand-maroon transition-all group"
+                        >
+                          <span className="font-serif text-lg text-brand-dark group-hover:text-brand-maroon">{item}</span>
+                          <ChevronRight size={18} className="text-brand-gold group-hover:translate-x-1 transition-transform" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="p-6 bg-brand-maroon rounded-2xl text-white relative overflow-hidden">
+                    <div className="relative z-10">
+                      <p className="text-[10px] uppercase tracking-widest text-brand-gold font-bold mb-1">Exclusive Offer</p>
+                      <h5 className="text-xl font-serif mb-2">Join the Elite Circle</h5>
+                      <p className="text-xs text-white/70 mb-4">Get early access to sales and 500 bonus points on signup.</p>
+                      <button className="bg-brand-gold text-brand-dark px-4 py-2 rounded-lg text-[10px] font-bold uppercase tracking-widest">Join Now</button>
+                    </div>
+                    <div className="absolute -right-4 -bottom-4 w-24 h-24 bg-brand-gold/20 rounded-full blur-2xl" />
+                  </div>
+
+                  <div className="space-y-4">
+                    <h4 className="text-[10px] uppercase tracking-[0.2em] text-brand-gold font-bold">Quick Links</h4>
+                    <div className="grid grid-cols-2 gap-4">
+                      {['Track Order', 'Size Guide', 'Shipping', 'Returns'].map(item => (
+                        <button key={item} className="text-left text-sm text-brand-dark/60 hover:text-brand-maroon transition-colors">{item}</button>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-6 border-t border-brand-gold/20 bg-white/50">
+                <div className="flex items-center justify-between mb-6">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 rounded-full bg-brand-gold/20 flex items-center justify-center">
+                      <User size={16} className="text-brand-maroon" />
+                    </div>
+                    <div>
+                      <p className="text-xs font-bold text-brand-dark">Welcome, Guest</p>
+                      <p className="text-[10px] text-brand-dark/40">Login to see points</p>
+                    </div>
+                  </div>
+                  <button onClick={() => setShowAdminLogin(true)} className="text-[10px] font-bold text-brand-maroon uppercase tracking-widest">Login</button>
+                </div>
+                <div className="flex space-x-4">
+                  <button onClick={() => setCurrency(c => c === 'INR' ? 'USD' : 'INR')} className="flex-1 py-2 bg-white border border-brand-gold/20 rounded-lg text-[10px] font-bold text-brand-maroon uppercase tracking-widest">{currency}</button>
+                  <button onClick={() => setLanguage(l => l === 'EN' ? 'HI' : 'EN')} className="flex-1 py-2 bg-white border border-brand-gold/20 rounded-lg text-[10px] font-bold text-brand-maroon uppercase tracking-widest">{language}</button>
+                </div>
+              </div>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       {/* Cart Drawer */}
       <AnimatePresence>
