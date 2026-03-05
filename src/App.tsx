@@ -14,22 +14,21 @@ import {
 import confetti from 'canvas-confetti';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { cn } from './utils';
 import { CATEGORIES, INITIAL_PRODUCTS, type Product, type CartItem, type Order, type Category } from './types';
 import { Badge } from './components/Badge';
 import { SectionHeading } from './components/SectionHeading';
 import { Navbar } from './components/Navbar';
-
-function cn(...inputs: ClassValue[]) {
-  return twMerge(clsx(inputs));
-}
-
-// --- Components ---
+import { ToastContainer } from './components/Toast';
+import { CheckoutModal } from './components/CheckoutModal';
+import { SizeGuideModal } from './components/SizeGuideModal';
 
 // --- Main App ---
 
 export default function App() {
   // --- State ---
   const [isAdmin, setIsAdmin] = useState(false);
+  const [adminTab, setAdminTab] = useState<'Dashboard' | 'Products' | 'Orders'>('Dashboard');
   const [showAdminLogin, setShowAdminLogin] = useState(false);
   const [adminPassword, setAdminPassword] = useState('');
   
@@ -65,6 +64,24 @@ export default function App() {
   const [visitorCount, setVisitorCount] = useState(124);
 
   const [loyaltyPoints, setLoyaltyPoints] = useState(450);
+  const [toasts, setToasts] = useState<{id: string, message: string, type: 'success' | 'error' | 'info'}[]>([]);
+  const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
+  const [checkoutStep, setCheckoutStep] = useState(1);
+  const [shippingDetails, setShippingDetails] = useState({
+    name: 'Mukul',
+    email: 'mukul13102005@gmail.com',
+    phone: '+91 98765 43210',
+    address: '123, Textile Market, Surat, Gujarat',
+    pincode: '395003'
+  });
+
+  const addToast = (message: string, type: 'success' | 'error' | 'info' = 'success') => {
+    const id = Math.random().toString(36).substr(2, 9);
+    setToasts(prev => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 3000);
+  };
 
   const [quickViewProduct, setQuickViewProduct] = useState<Product | null>(null);
   const [recentlyViewed, setRecentlyViewed] = useState<string[]>(() => {
@@ -147,8 +164,10 @@ export default function App() {
     setCart(prev => {
       const existing = prev.find(item => item.id === product.id);
       if (existing) {
+        addToast(`Increased ${product.name} quantity in bag`, 'info');
         return prev.map(item => item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item);
       }
+      addToast(`${product.name} added to your bag`, 'success');
       return [...prev, { ...product, quantity: 1 }];
     });
     setIsCartOpen(true);
@@ -169,7 +188,16 @@ export default function App() {
   };
 
   const toggleWishlist = (id: string) => {
-    setWishlist(prev => prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]);
+    setWishlist(prev => {
+      const isIncluded = prev.includes(id);
+      if (isIncluded) {
+        addToast('Removed from wishlist', 'info');
+        return prev.filter(i => i !== id);
+      } else {
+        addToast('Added to wishlist', 'success');
+        return [...prev, id];
+      }
+    });
   };
 
   const cartTotal = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
@@ -177,6 +205,16 @@ export default function App() {
   const cartSavings = cartOriginalTotal - cartTotal;
 
   const handleCheckout = () => {
+    if (cart.length === 0) {
+      addToast('Your bag is empty', 'error');
+      return;
+    }
+    setIsCheckoutOpen(true);
+    setCheckoutStep(1);
+    setIsCartOpen(false);
+  };
+
+  const confirmOrder = () => {
     const newOrder: Order = {
       id: `ORD-${Math.random().toString(36).substr(2, 9).toUpperCase()}`,
       date: new Date().toISOString(),
@@ -184,21 +222,27 @@ export default function App() {
       total: cartTotal,
       status: 'Pending',
       customer: {
-        name: 'Mukul',
-        email: 'mukul13102005@gmail.com',
-        address: 'Surat, Gujarat, India'
+        name: shippingDetails.name,
+        email: shippingDetails.email,
+        address: `${shippingDetails.address}, ${shippingDetails.pincode}`
       }
     };
     setOrders(prev => [newOrder, ...prev]);
     setCart([]);
-    setIsCartOpen(false);
+    setIsCheckoutOpen(false);
+    setLoyaltyPoints(prev => prev + Math.floor(cartTotal / 100));
     confetti({
       particleCount: 150,
       spread: 70,
       origin: { y: 0.6 },
       colors: ['#D4AF37', '#800000', '#F5F5DC']
     });
-    alert('Order Placed Successfully! Thank you for shopping with RoziRoti by Ratna.');
+    addToast('Order Placed Successfully! Thank you for shopping with us.', 'success');
+  };
+
+  const deleteProduct = (id: string) => {
+    setProducts(prev => prev.filter(p => p.id !== id));
+    addToast('Product deleted successfully', 'info');
   };
 
   const handleAdminLogin = () => {
@@ -1003,51 +1047,25 @@ export default function App() {
       </AnimatePresence>
 
       {/* Size Guide Modal */}
-      <AnimatePresence>
-        {showSizeGuide && (
-          <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
-            <motion.div 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-              onClick={() => setShowSizeGuide(false)}
-              className="absolute inset-0 bg-brand-dark/80 backdrop-blur-md"
-            />
-            <motion.div 
-              initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
-              className="relative bg-white p-8 rounded-3xl shadow-2xl max-w-2xl w-full border border-brand-gold/30"
-            >
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-2xl font-serif text-brand-maroon">Size Guide</h3>
-                <button onClick={() => setShowSizeGuide(false)}><X size={24} /></button>
-              </div>
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm text-left">
-                  <thead className="bg-brand-beige">
-                    <tr>
-                      <th className="px-4 py-2">Size</th>
-                      <th className="px-4 py-2">Bust (in)</th>
-                      <th className="px-4 py-2">Waist (in)</th>
-                      <th className="px-4 py-2">Hip (in)</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-brand-gold/10">
-                    {['XS', 'S', 'M', 'L', 'XL', 'XXL'].map((size, i) => (
-                      <tr key={size}>
-                        <td className="px-4 py-3 font-bold">{size}</td>
-                        <td className="px-4 py-3">{32 + (i * 2)}</td>
-                        <td className="px-4 py-3">{24 + (i * 2)}</td>
-                        <td className="px-4 py-3">{34 + (i * 2)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-              <p className="mt-6 text-xs text-brand-dark/60 italic">
-                * All measurements are in inches. If you are between sizes, we recommend going one size up for a better fit.
-              </p>
-            </motion.div>
-          </div>
-        )}
-      </AnimatePresence>
+      <SizeGuideModal 
+        isOpen={showSizeGuide} 
+        onClose={() => setShowSizeGuide(false)} 
+      />
+
+      {/* Checkout Modal */}
+      <CheckoutModal 
+        isOpen={isCheckoutOpen}
+        onClose={() => setIsCheckoutOpen(false)}
+        step={checkoutStep}
+        setStep={setCheckoutStep}
+        shippingDetails={shippingDetails}
+        setShippingDetails={setShippingDetails}
+        onConfirm={confirmOrder}
+        cartTotal={cartTotal}
+      />
+
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} />
     </div>
   );
 
@@ -1061,18 +1079,19 @@ export default function App() {
         </div>
         <nav className="flex-1 p-4 space-y-2">
           {[
-            { icon: LayoutDashboard, label: 'Dashboard' },
-            { icon: Package, label: 'Products' },
-            { icon: ShoppingBag, label: 'Orders' },
-            { icon: Users, label: 'Customers' },
-            { icon: TrendingUp, label: 'Analytics' },
-            { icon: Bell, label: 'Notifications' }
+            { icon: LayoutDashboard, label: 'Dashboard', tab: 'Dashboard' },
+            { icon: Package, label: 'Products', tab: 'Products' },
+            { icon: ShoppingBag, label: 'Orders', tab: 'Orders' },
+            { icon: Users, label: 'Customers', tab: 'Dashboard' },
+            { icon: TrendingUp, label: 'Analytics', tab: 'Dashboard' },
+            { icon: Bell, label: 'Notifications', tab: 'Dashboard' }
           ].map((item, i) => (
             <button 
               key={i}
+              onClick={() => setAdminTab(item.tab as any)}
               className={cn(
                 "w-full flex items-center space-x-3 px-4 py-3 rounded-xl text-sm font-medium transition-colors",
-                i === 0 ? "bg-brand-gold text-brand-dark" : "text-white/60 hover:bg-white/5 hover:text-white"
+                adminTab === item.tab ? "bg-brand-gold text-brand-dark" : "text-white/60 hover:bg-white/5 hover:text-white"
               )}
             >
               <item.icon size={18} />
@@ -1112,124 +1131,253 @@ export default function App() {
         </header>
 
         <div className="p-8 space-y-8">
-          {/* Stats Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { label: 'Total Revenue', value: `₹${orders.reduce((s, o) => s + o.total, 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
-              { label: 'Total Orders', value: orders.length, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
-              { label: 'Active Products', value: products.length, icon: Package, color: 'text-amber-600', bg: 'bg-amber-50' },
-              { label: 'Total Customers', value: '1,284', icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' }
-            ].map((stat, i) => (
-              <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
-                <div className="flex justify-between items-start mb-4">
-                  <div className={cn("p-3 rounded-xl", stat.bg)}>
-                    <stat.icon className={stat.color} size={24} />
+          {adminTab === 'Dashboard' && (
+            <>
+              {/* Stats Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[
+                  { label: 'Total Revenue', value: `₹${orders.reduce((s, o) => s + o.total, 0).toLocaleString()}`, icon: DollarSign, color: 'text-emerald-600', bg: 'bg-emerald-50' },
+                  { label: 'Total Orders', value: orders.length, icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
+                  { label: 'Active Products', value: products.length, icon: Package, color: 'text-amber-600', bg: 'bg-amber-50' },
+                  { label: 'Total Customers', value: '1,284', icon: Users, color: 'text-purple-600', bg: 'bg-purple-50' }
+                ].map((stat, i) => (
+                  <div key={i} className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
+                    <div className="flex justify-between items-start mb-4">
+                      <div className={cn("p-3 rounded-xl", stat.bg)}>
+                        <stat.icon className={stat.color} size={24} />
+                      </div>
+                      <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">+12.5%</span>
+                    </div>
+                    <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
+                    <h3 className="text-2xl font-bold text-slate-800 mt-1">{stat.value}</h3>
                   </div>
-                  <span className="text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-lg">+12.5%</span>
+                ))}
+              </div>
+
+              {/* Charts */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-lg font-bold text-slate-800 mb-6">Revenue Performance</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={[
+                        { name: 'Mon', rev: 4000 }, { name: 'Tue', rev: 3000 }, { name: 'Wed', rev: 5000 },
+                        { name: 'Thu', rev: 2780 }, { name: 'Fri', rev: 1890 }, { name: 'Sat', rev: 2390 }, { name: 'Sun', rev: 3490 }
+                      ]}>
+                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                        <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                        <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                        <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                        <Line type="monotone" dataKey="rev" stroke="#800000" strokeWidth={3} dot={{ r: 4, fill: '#800000' }} activeDot={{ r: 6 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
                 </div>
-                <p className="text-slate-400 text-sm font-medium">{stat.label}</p>
-                <h3 className="text-2xl font-bold text-slate-800 mt-1">{stat.value}</h3>
+                <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
+                  <h3 className="text-lg font-bold text-slate-800 mb-6">Category Distribution</h3>
+                  <div className="h-[300px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <PieChart>
+                        <Pie
+                          data={[
+                            { name: 'Cotton Sarees', value: 400 },
+                            { name: 'Silk Sarees', value: 300 },
+                            { name: 'Suits', value: 300 },
+                            { name: 'Wedding', value: 200 }
+                          ]}
+                          innerRadius={60}
+                          outerRadius={100}
+                          paddingAngle={5}
+                          dataKey="value"
+                        >
+                          {['#800000', '#D4AF37', '#1A1A1A', '#F5F5DC'].map((color, index) => (
+                            <Cell key={`cell-${index}`} fill={color} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
               </div>
-            ))}
-          </div>
 
-          {/* Charts */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-              <h3 className="text-lg font-bold text-slate-800 mb-6">Revenue Performance</h3>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <LineChart data={[
-                    { name: 'Mon', rev: 4000 }, { name: 'Tue', rev: 3000 }, { name: 'Wed', rev: 5000 },
-                    { name: 'Thu', rev: 2780 }, { name: 'Fri', rev: 1890 }, { name: 'Sat', rev: 2390 }, { name: 'Sun', rev: 3490 }
-                  ]}>
-                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-                    <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                    <YAxis axisLine={false} tickLine={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
-                    <Tooltip contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
-                    <Line type="monotone" dataKey="rev" stroke="#800000" strokeWidth={3} dot={{ r: 4, fill: '#800000' }} activeDot={{ r: 6 }} />
-                  </LineChart>
-                </ResponsiveContainer>
-              </div>
-            </div>
-            <div className="bg-white p-8 rounded-2xl border border-slate-200 shadow-sm">
-              <h3 className="text-lg font-bold text-slate-800 mb-6">Category Distribution</h3>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={[
-                        { name: 'Cotton Sarees', value: 400 },
-                        { name: 'Silk Sarees', value: 300 },
-                        { name: 'Suits', value: 300 },
-                        { name: 'Wedding', value: 200 }
-                      ]}
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={5}
-                      dataKey="value"
-                    >
-                      {['#800000', '#D4AF37', '#1A1A1A', '#F5F5DC'].map((color, index) => (
-                        <Cell key={`cell-${index}`} fill={color} />
+              {/* Recent Orders Table */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-8 border-b border-slate-200 flex justify-between items-center">
+                  <h3 className="text-lg font-bold text-slate-800">Recent Transactions</h3>
+                  <button onClick={() => setAdminTab('Orders')} className="text-brand-maroon text-sm font-bold hover:underline">View All Orders</button>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left">
+                    <thead className="bg-slate-50 border-b border-slate-200">
+                      <tr>
+                        <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Order ID</th>
+                        <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Customer</th>
+                        <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Date</th>
+                        <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Total</th>
+                        <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Status</th>
+                        <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {orders.slice(0, 5).map((order) => (
+                        <tr key={order.id} className="hover:bg-slate-50 transition-colors">
+                          <td className="px-8 py-4 font-bold text-slate-800">{order.id}</td>
+                          <td className="px-8 py-4">
+                            <p className="font-medium text-slate-800">{order.customer.name}</p>
+                            <p className="text-xs text-slate-400">{order.customer.email}</p>
+                          </td>
+                          <td className="px-8 py-4 text-slate-500 text-sm">{new Date(order.date).toLocaleDateString()}</td>
+                          <td className="px-8 py-4 font-bold text-slate-800">₹{order.total}</td>
+                          <td className="px-8 py-4">
+                            <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">
+                              {order.status}
+                            </span>
+                          </td>
+                          <td className="px-8 py-4">
+                            <div className="flex space-x-2">
+                              <button className="p-2 text-slate-400 hover:text-brand-maroon transition-colors"><Eye size={16} /></button>
+                              <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><Edit size={16} /></button>
+                            </div>
+                          </td>
+                        </tr>
                       ))}
-                    </Pie>
-                    <Tooltip />
-                  </PieChart>
-                </ResponsiveContainer>
+                      {orders.length === 0 && (
+                        <tr>
+                          <td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">No transactions found yet.</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </>
+          )}
+
+          {adminTab === 'Products' && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="p-8 border-b border-slate-200 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-800">Product Management</h3>
+                <button className="maroon-gradient text-white px-6 py-2 rounded-xl text-sm font-bold uppercase tracking-widest">Add New Product</button>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 border-b border-slate-200">
+                    <tr>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Product</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Category</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Price</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Stock</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Status</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {products.slice(0, 10).map((product) => (
+                      <tr key={product.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-8 py-4">
+                          <div className="flex items-center space-x-4">
+                            <img src={product.image} alt={product.name} className="w-10 h-10 rounded-lg object-cover" />
+                            <span className="font-bold text-slate-800 line-clamp-1">{product.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-8 py-4 text-sm text-slate-500">{product.category}</td>
+                        <td className="px-8 py-4 font-bold text-slate-800">₹{product.price}</td>
+                        <td className="px-8 py-4 text-sm text-slate-500">{product.stock}</td>
+                        <td className="px-8 py-4">
+                          <span className={cn(
+                            "px-3 py-1 rounded-full text-[10px] font-bold uppercase",
+                            product.stock > 0 ? "bg-green-50 text-green-600 border border-green-200" : "bg-red-50 text-red-600 border border-red-200"
+                          )}>
+                            {product.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                          </span>
+                        </td>
+                        <td className="px-8 py-4">
+                          <div className="flex space-x-2">
+                            <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><Edit size={16} /></button>
+                            <button 
+                              onClick={() => deleteProduct(product.id)}
+                              className="p-2 text-slate-400 hover:text-red-600 transition-colors"
+                            >
+                              <Trash size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
-          </div>
+          )}
 
-          {/* Recent Orders Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-            <div className="p-8 border-b border-slate-200 flex justify-between items-center">
-              <h3 className="text-lg font-bold text-slate-800">Recent Transactions</h3>
-              <button className="text-brand-maroon text-sm font-bold hover:underline">View All Orders</button>
-            </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Order ID</th>
-                    <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Customer</th>
-                    <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Date</th>
-                    <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Total</th>
-                    <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Status</th>
-                    <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {orders.slice(0, 5).map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-50 transition-colors">
-                      <td className="px-8 py-4 font-bold text-slate-800">{order.id}</td>
-                      <td className="px-8 py-4">
-                        <p className="font-medium text-slate-800">{order.customer.name}</p>
-                        <p className="text-xs text-slate-400">{order.customer.email}</p>
-                      </td>
-                      <td className="px-8 py-4 text-slate-500 text-sm">{new Date(order.date).toLocaleDateString()}</td>
-                      <td className="px-8 py-4 font-bold text-slate-800">₹{order.total}</td>
-                      <td className="px-8 py-4">
-                        <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase bg-amber-50 text-amber-600 border border-amber-200">
-                          {order.status}
-                        </span>
-                      </td>
-                      <td className="px-8 py-4">
-                        <div className="flex space-x-2">
-                          <button className="p-2 text-slate-400 hover:text-brand-maroon transition-colors"><Eye size={16} /></button>
-                          <button className="p-2 text-slate-400 hover:text-blue-600 transition-colors"><Edit size={16} /></button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                  {orders.length === 0 && (
+          {adminTab === 'Orders' && (
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+              <div className="p-8 border-b border-slate-200 flex justify-between items-center">
+                <h3 className="text-lg font-bold text-slate-800">All Orders</h3>
+                <div className="flex space-x-4">
+                  <select className="bg-slate-50 border border-slate-200 rounded-xl px-4 py-2 text-sm focus:outline-none">
+                    <option>All Status</option>
+                    <option>Pending</option>
+                    <option>Processing</option>
+                    <option>Shipped</option>
+                    <option>Delivered</option>
+                  </select>
+                </div>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left">
+                  <thead className="bg-slate-50 border-b border-slate-200">
                     <tr>
-                      <td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">No transactions found yet.</td>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Order ID</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Customer</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Items</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Total</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Status</th>
+                      <th className="px-8 py-4 text-[10px] uppercase font-bold text-slate-400">Action</th>
                     </tr>
-                  )}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {orders.map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="px-8 py-4 font-bold text-slate-800">{order.id}</td>
+                        <td className="px-8 py-4">
+                          <p className="font-medium text-slate-800">{order.customer.name}</p>
+                          <p className="text-xs text-slate-400">{order.customer.email}</p>
+                        </td>
+                        <td className="px-8 py-4 text-sm text-slate-500">{order.items.length} Items</td>
+                        <td className="px-8 py-4 font-bold text-slate-800">₹{order.total}</td>
+                        <td className="px-8 py-4">
+                          <select 
+                            value={order.status}
+                            onChange={(e) => {
+                              const newStatus = e.target.value as any;
+                              setOrders(prev => prev.map(o => o.id === order.id ? { ...o, status: newStatus } : o));
+                              addToast(`Order ${order.id} status updated to ${newStatus}`, 'success');
+                            }}
+                            className="bg-slate-50 border border-slate-200 rounded-lg px-2 py-1 text-[10px] font-bold uppercase focus:outline-none"
+                          >
+                            <option>Pending</option>
+                            <option>Processing</option>
+                            <option>Shipped</option>
+                            <option>Delivered</option>
+                          </select>
+                        </td>
+                        <td className="px-8 py-4">
+                          <button className="p-2 text-slate-400 hover:text-brand-maroon transition-colors"><Eye size={16} /></button>
+                        </td>
+                      </tr>
+                    ))}
+                    {orders.length === 0 && (
+                      <tr>
+                        <td colSpan={6} className="px-8 py-12 text-center text-slate-400 italic">No orders found.</td>
+                      </tr>
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
         </div>
       </main>
     </div>

@@ -58,31 +58,35 @@ export const CATEGORIES: Category[] = [
 // Helper to generate 50+ products
 const generateProducts = (): Product[] => {
   const products: Product[] = [];
-  const fabrics = ["Pure Cotton", "Silk Blend", "Chanderi", "Georgette", "Organza"];
+  const fabrics = ["Pure Cotton", "Silk Blend", "Chanderi", "Georgette", "Organza", "Banarasi Silk", "Kanchipuram Silk", "Linen Silk"];
+  const colors = ["Royal Maroon", "Golden Beige", "Emerald Green", "Midnight Blue", "Rose Pink", "Turquoise", "Saffron", "Ivory"];
+  const patterns = ["Zari Border", "Floral Embroidery", "Geometric Print", "Traditional Butta", "Modern Abstract"];
   
   for (let i = 1; i <= 60; i++) {
     const category = CATEGORIES[i % CATEGORIES.length];
     const fabric = fabrics[i % fabrics.length];
+    const color = colors[i % colors.length];
+    const pattern = patterns[i % patterns.length];
     const isSale = i % 5 === 0;
-    const price = 1500 + (i * 100);
-    const originalPrice = isSale ? price * 1.25 : price;
+    const price = 1500 + (i * 120);
+    const originalPrice = isSale ? price * 1.3 : price;
     
     products.push({
       id: `prod-${i}`,
-      name: `${category.replace(" Collection", "")} - ${fabric} Design ${i}`,
+      name: `${color} ${fabric} ${category.replace(" Collection", "")} with ${pattern}`,
       price: Math.round(price),
       originalPrice: Math.round(originalPrice),
       category,
-      image: `https://picsum.photos/seed/ethnic-fashion-${i % 20}/600/800`,
-      description: `Experience the elegance of Surat's finest craftsmanship. This ${category} is made from premium ${fabric}, perfect for making a statement at any occasion.`,
+      image: `https://picsum.photos/seed/ethnic-fashion-${i}/600/800`,
+      description: `Elevate your ethnic wardrobe with this exquisite ${color} ${category}. Handcrafted from the finest ${fabric}, it features intricate ${pattern} that showcases the rich heritage of Surat's textile artistry. Designed for the modern woman who values tradition and style.`,
       stock: Math.floor(Math.random() * 20) + 5,
       isBestseller: i % 7 === 0,
       isFeatured: i % 10 === 0,
       badge: i % 12 === 0 ? "Limited" : (i % 8 === 0 ? "Hot" : (isSale ? "Sale" : (i % 15 === 0 ? "New" : undefined))),
-      rating: 4 + Math.random(),
-      reviews: Math.floor(Math.random() * 100) + 10,
+      rating: 4 + (Math.random() * 1),
+      reviews: Math.floor(Math.random() * 150) + 20,
       fabric,
-      care: "Dry clean only for best results. Store in a cool, dry place."
+      care: "Dry clean only recommended. Store in a muslin cloth to maintain the fabric's luster and prevent zari darkening."
     });
   }
   return products;

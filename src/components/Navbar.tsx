@@ -254,7 +254,15 @@ export const Navbar = ({
                   </h4>
                   <div className="flex flex-wrap gap-2">
                     {trendingSearches.map(tag => (
-                      <button key={tag} className="px-4 py-2 bg-brand-beige/30 hover:bg-brand-gold/20 rounded-full text-xs text-brand-dark/70 transition-colors">
+                      <button 
+                        key={tag} 
+                        onClick={() => {
+                          setSearchQuery(tag);
+                          setIsSearchModalOpen(false);
+                          setSelectedCategory('All');
+                        }}
+                        className="px-4 py-2 bg-brand-beige/30 hover:bg-brand-gold/20 rounded-full text-xs text-brand-dark/70 transition-colors"
+                      >
                         {tag}
                       </button>
                     ))}
