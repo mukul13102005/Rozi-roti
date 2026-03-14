@@ -6,7 +6,7 @@ interface SectionHeadingProps {
   subtitle?: string;
 }
 
-export const SectionHeading = ({ title, subtitle }: SectionHeadingProps) => (
+export const SectionHeading: React.FC<SectionHeadingProps> = ({ title, subtitle }) => (
   <div className="text-center mb-12">
     <motion.h2 
       initial={{ opacity: 0, y: 20 }}

@@ -1,99 +1,63 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Ruler } from 'lucide-react';
+import { X } from 'lucide-react';
 
-interface SizeGuideModalProps {
-  isOpen: boolean;
-  onClose: () => void;
-}
-
-export const SizeGuideModal = ({ isOpen, onClose }: SizeGuideModalProps) => {
-  if (!isOpen) return null;
-
-  return (
-    <AnimatePresence>
-      <div className="fixed inset-0 z-[250] flex items-center justify-center p-4">
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
+export const SizeGuideModal: React.FC<{ isOpen: boolean; onClose: () => void }> = ({ isOpen, onClose }) => (
+  <AnimatePresence>
+    {isOpen && (
+      <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
+        <motion.div 
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
           onClick={onClose}
           className="absolute inset-0 bg-brand-dark/80 backdrop-blur-sm"
         />
-        
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 20 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          exit={{ opacity: 0, scale: 0.9, y: 20 }}
-          className="relative w-full max-w-2xl bg-white rounded-3xl shadow-2xl overflow-hidden"
+        <motion.div 
+          initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }}
+          className="relative bg-white rounded-[32px] p-8 max-w-2xl w-full shadow-2xl"
         >
-          <div className="p-8 border-b border-brand-gold/10 flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="p-3 bg-brand-maroon text-white rounded-2xl">
-                <Ruler size={24} />
-              </div>
-              <h2 className="text-2xl font-serif text-brand-maroon">Size & Fit Guide</h2>
-            </div>
-            <button onClick={onClose} className="p-2 hover:bg-brand-gold/10 rounded-full transition-colors">
-              <X size={24} className="text-brand-dark/40" />
-            </button>
+          <div className="flex justify-between items-center mb-8">
+            <h3 className="text-2xl font-serif text-brand-maroon">Size & Fit Guide</h3>
+            <button onClick={onClose} className="p-2 hover:bg-brand-beige rounded-full transition-colors"><X size={24} /></button>
           </div>
-
-          <div className="p-8 overflow-x-auto">
+          
+          <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-brand-maroon/5">
-                  <th className="p-4 text-[10px] uppercase tracking-widest font-bold text-brand-maroon border-b border-brand-maroon/10">Size (Standard)</th>
-                  <th className="p-4 text-[10px] uppercase tracking-widest font-bold text-brand-maroon border-b border-brand-maroon/10">Bust (Inches)</th>
-                  <th className="p-4 text-[10px] uppercase tracking-widest font-bold text-brand-maroon border-b border-brand-maroon/10">Waist (Inches)</th>
-                  <th className="p-4 text-[10px] uppercase tracking-widest font-bold text-brand-maroon border-b border-brand-maroon/10">Hip (Inches)</th>
+                <tr className="bg-brand-beige/30">
+                  <th className="p-4 text-[10px] uppercase font-bold tracking-widest text-brand-dark/40">Size</th>
+                  <th className="p-4 text-[10px] uppercase font-bold tracking-widest text-brand-dark/40">Bust (in)</th>
+                  <th className="p-4 text-[10px] uppercase font-bold tracking-widest text-brand-dark/40">Waist (in)</th>
+                  <th className="p-4 text-[10px] uppercase font-bold tracking-widest text-brand-dark/40">Hip (in)</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-brand-gold/10">
                 {[
-                  { size: 'XS', bust: '32', waist: '26', hip: '35' },
-                  { size: 'S', bust: '34', waist: '28', hip: '37' },
-                  { size: 'M', bust: '36', waist: '30', hip: '39' },
-                  { size: 'L', bust: '38', waist: '32', hip: '41' },
-                  { size: 'XL', bust: '40', waist: '34', hip: '43' },
-                  { size: 'XXL', bust: '42', waist: '36', hip: '45' },
-                ].map((row, i) => (
-                  <tr key={row.size} className={i % 2 === 0 ? 'bg-white' : 'bg-brand-gold/5'}>
-                    <td className="p-4 text-sm font-bold border-b border-brand-gold/10">{row.size}</td>
-                    <td className="p-4 text-sm text-brand-dark/60 border-b border-brand-gold/10">{row.bust}"</td>
-                    <td className="p-4 text-sm text-brand-dark/60 border-b border-brand-gold/10">{row.waist}"</td>
-                    <td className="p-4 text-sm text-brand-dark/60 border-b border-brand-gold/10">{row.hip}"</td>
+                  { s: 'XS', b: '32', w: '26', h: '35' },
+                  { s: 'S', b: '34', w: '28', h: '37' },
+                  { s: 'M', b: '36', w: '30', h: '39' },
+                  { s: 'L', b: '38', w: '32', h: '41' },
+                  { s: 'XL', b: '40', w: '34', h: '43' },
+                  { s: 'XXL', b: '42', w: '36', h: '45' },
+                ].map(row => (
+                  <tr key={row.s} className="hover:bg-brand-beige/10 transition-colors">
+                    <td className="p-4 font-bold text-brand-maroon">{row.s}</td>
+                    <td className="p-4 text-brand-dark/60">{row.b}</td>
+                    <td className="p-4 text-brand-dark/60">{row.w}</td>
+                    <td className="p-4 text-brand-dark/60">{row.h}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-
-            <div className="mt-8 p-6 bg-brand-beige rounded-2xl border border-brand-gold/20">
-              <h4 className="font-bold text-brand-maroon mb-2 flex items-center">
-                <Info size={16} className="mr-2" /> How to Measure?
-              </h4>
-              <ul className="text-sm text-brand-dark/60 space-y-2 list-disc pl-5">
-                <li><strong>Bust:</strong> Measure around the fullest part of your chest.</li>
-                <li><strong>Waist:</strong> Measure around your natural waistline.</li>
-                <li><strong>Hips:</strong> Measure around the fullest part of your hips.</li>
-                <li><strong>Saree Length:</strong> Standard length is 5.5 meters plus 0.8 meters blouse piece.</li>
-              </ul>
-            </div>
           </div>
-
-          <div className="p-8 bg-brand-gold/5 border-t border-brand-gold/10 text-center">
-            <p className="text-xs text-brand-dark/40 italic">
-              *Sizes may vary slightly by fabric type and design. For custom stitching, please contact our support.
+          
+          <div className="mt-8 p-6 bg-brand-beige/20 rounded-2xl border border-brand-gold/10">
+            <h4 className="text-xs font-bold uppercase tracking-widest text-brand-gold mb-2">How to measure?</h4>
+            <p className="text-sm text-brand-dark/60 leading-relaxed">
+              Measure around the fullest part of your bust, the narrowest part of your waist, and the fullest part of your hips. Keep the tape comfortably loose.
             </p>
           </div>
         </motion.div>
       </div>
-    </AnimatePresence>
-  );
-};
-
-const Info = ({ size, className }: { size: number, className?: string }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-    <circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/>
-  </svg>
+    )}
+  </AnimatePresence>
 );

@@ -1,5 +1,10 @@
 import React from 'react';
-import { cn } from '../utils';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface BadgeProps {
   children: React.ReactNode;
@@ -7,7 +12,7 @@ interface BadgeProps {
   className?: string;
 }
 
-export const Badge = ({ children, variant = 'default', className }: BadgeProps) => {
+export const Badge: React.FC<BadgeProps> = ({ children, variant = 'default', className }) => {
   const variants = {
     default: 'bg-brand-dark text-white',
     gold: 'bg-brand-gold text-brand-dark font-bold',

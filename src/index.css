@@ -1,32 +1,37 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-gold: #D4AF37;
-  --color-brand-maroon: #800000;
-  --color-brand-beige: #F5F5DC;
-  --color-brand-dark: #1A1A1A;
-  
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Playfair Display", serif;
-  --font-sans: "Inter", sans-serif;
+  
+  --color-brand-maroon: #800000;
+  --color-brand-gold: #D4AF37;
+  --color-brand-dark: #1A1A1A;
+  --color-brand-beige: #F5F5DC;
 }
 
 @layer base {
   body {
-    @apply bg-brand-beige text-brand-dark font-sans;
-  }
-  h1, h2, h3, h4, h5, h6 {
-    @apply font-serif;
+    @apply bg-white text-brand-dark antialiased;
   }
 }
 
-.glass-effect {
-  @apply bg-white/80 backdrop-blur-md border border-white/20;
+@layer components {
+  .maroon-gradient {
+    background: linear-gradient(135deg, #800000 0%, #4D0000 100%);
+  }
+  
+  .gold-shimmer {
+    background: linear-gradient(90deg, #D4AF37 0%, #FFD700 50%, #D4AF37 100%);
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
 }
 
-.gold-gradient {
-  background: linear-gradient(45deg, #BF953F, #FCF6BA, #B38728, #FBF5B7, #AA771C);
+@keyframes shimmer {
+  to { background-position: 200% center; }
 }
 
-.maroon-gradient {
-  background: linear-gradient(135deg, #800000 0%, #4D0000 100%);
+.font-serif {
+  font-family: var(--font-serif);
 }

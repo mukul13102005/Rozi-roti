@@ -1,38 +1,50 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CheckCircle, XCircle, Info, X } from 'lucide-react';
+import { CheckCircle, AlertCircle, Info, X } from 'lucide-react';
+
+export type ToastType = 'success' | 'error' | 'info';
 
 interface ToastProps {
-  toasts: { id: string; message: string; type: 'success' | 'error' | 'info' }[];
+  message: string;
+  type: ToastType;
+  onClose: () => void;
 }
 
-export const ToastContainer = ({ toasts }: ToastProps) => {
+export const Toast: React.FC<ToastProps> = ({ message, type, onClose }) => {
+  const icons = {
+    success: <CheckCircle className="text-emerald-500" size={20} />,
+    error: <AlertCircle className="text-rose-500" size={20} />,
+    info: <Info className="text-blue-500" size={20} />
+  };
+
+  const bgColors = {
+    success: 'bg-emerald-50 border-emerald-100',
+    error: 'bg-rose-50 border-rose-100',
+    info: 'bg-blue-50 border-blue-100'
+  };
+
   return (
-    <div className="fixed bottom-24 right-8 z-[300] flex flex-col gap-4 pointer-events-none">
-      <AnimatePresence>
-        {toasts.map((toast) => (
-          <motion.div
-            key={toast.id}
-            initial={{ opacity: 0, x: 50, scale: 0.8 }}
-            animate={{ opacity: 1, x: 0, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.8, transition: { duration: 0.2 } }}
-            className="pointer-events-auto"
-          >
-            <div className="bg-white rounded-2xl shadow-2xl border border-brand-gold/10 p-4 flex items-center space-x-4 min-w-[300px]">
-              <div className={`p-2 rounded-full ${
-                toast.type === 'success' ? 'bg-green-100 text-green-600' :
-                toast.type === 'error' ? 'bg-red-100 text-red-600' :
-                'bg-blue-100 text-blue-600'
-              }`}>
-                {toast.type === 'success' && <CheckCircle size={20} />}
-                {toast.type === 'error' && <XCircle size={20} />}
-                {toast.type === 'info' && <Info size={20} />}
-              </div>
-              <p className="text-sm font-bold text-brand-dark flex-1">{toast.message}</p>
-            </div>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
+    <motion.div 
+      initial={{ opacity: 0, x: 50, scale: 0.9 }}
+      animate={{ opacity: 1, x: 0, scale: 1 }}
+      exit={{ opacity: 0, x: 20, scale: 0.9 }}
+      className={`flex items-center space-x-4 p-4 rounded-2xl border shadow-xl ${bgColors[type]} min-w-[300px] pointer-events-auto`}
+    >
+      <div className="flex-shrink-0">{icons[type]}</div>
+      <p className="flex-1 text-sm font-medium text-brand-dark/80">{message}</p>
+      <button onClick={onClose} className="text-brand-dark/20 hover:text-brand-dark/40 transition-colors">
+        <X size={16} />
+      </button>
+    </motion.div>
   );
 };
+
+export const ToastContainer = ({ toasts, removeToast }: { toasts: any[], removeToast: (id: string) => void }) => (
+  <div className="fixed bottom-8 right-8 z-[200] flex flex-col space-y-4 pointer-events-none">
+    <AnimatePresence>
+      {toasts.map(toast => (
+        <Toast key={toast.id} {...toast} onClose={() => removeToast(toast.id)} />
+      ))}
+    </AnimatePresence>
+  </div>
+);
