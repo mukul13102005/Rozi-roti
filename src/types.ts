@@ -19,6 +19,8 @@ export interface Product {
   isTrending?: boolean;
   isFestival?: boolean;
   fabric: string;
+  color: string;
+  pattern: string;
   description: string;
 }
 
@@ -63,6 +65,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     stock: 5,
     isBestSeller: true,
     fabric: 'Pure Banarasi Silk',
+    color: 'Red',
+    pattern: 'Zari Work',
     description: 'Exquisite handwoven Banarasi silk saree with intricate zari work, perfect for weddings and grand occasions.'
   },
   {
@@ -78,6 +82,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     stock: 12,
     isTrending: true,
     fabric: 'Georgette',
+    color: 'Blue',
+    pattern: 'Floral',
     description: 'Lightweight and comfortable floral print georgette suit set, ideal for daily elegance.'
   },
   {
@@ -93,6 +99,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     stock: 3,
     isFestival: true,
     fabric: 'Premium Velvet',
+    color: 'Maroon',
+    pattern: 'Embroidery',
     description: 'Rich velvet suit with heavy gold embroidery, designed for festive celebrations and evening parties.'
   },
   {
@@ -108,6 +116,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     stock: 2,
     isBestSeller: true,
     fabric: 'Kanjeevaram Silk',
+    color: 'Gold',
+    pattern: 'Traditional',
     description: 'Authentic Kanjeevaram silk saree with traditional motifs and a grand pallu.'
   },
   {
@@ -122,6 +132,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     reviews: 210,
     stock: 25,
     fabric: 'Pure Cotton',
+    color: 'Green',
+    pattern: 'Plain',
     description: 'Breathable and soft pure cotton saree for everyday comfort and style.'
   },
   {
@@ -137,6 +149,8 @@ export const INITIAL_PRODUCTS: Product[] = [
     stock: 8,
     isTrending: true,
     fabric: 'Chanderi Silk',
+    color: 'Pink',
+    pattern: 'Solid',
     description: 'Elegant semi-stitched Anarkali suit that can be customized to your perfect fit.'
   }
 ];

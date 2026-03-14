@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { 
   ArrowRight, ShieldCheck, Truck, RotateCcw, 
   Instagram, Facebook, Twitter, Mail, Phone, MapPin,
-  X, Sparkles, Gift
+  X, Sparkles, Gift, Heart
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
@@ -18,11 +18,21 @@ import { CheckoutModal } from './components/CheckoutModal';
 import { SizeGuideModal } from './components/SizeGuideModal';
 import { ToastContainer, ToastType } from './components/Toast';
 import { AdminPanel } from './components/AdminPanel';
+import { ProductPage } from './components/ProductPage';
+
+import { FlashSaleBanner } from './components/FlashSaleBanner';
+import { FestivalBanner } from './components/FestivalBanner';
+import { RecommendationSystem } from './components/RecommendationSystem';
+import { NotificationManager } from './components/NotificationManager';
+import { Testimonials } from './components/Testimonials';
+import { MobileMenu } from './components/MobileMenu';
 
 export default function App() {
   // State
   const [products, setProducts] = useState<Product[]>(INITIAL_PRODUCTS);
   const [selectedCategory, setSelectedCategory] = useState<Category | 'All'>('All');
+  const [selectedColor, setSelectedColor] = useState<string | 'All'>('All');
+  const [selectedPattern, setSelectedPattern] = useState<string | 'All'>('All');
   const [searchQuery, setSearchQuery] = useState('');
   const [cart, setCart] = useState<CartItem[]>([]);
   const [wishlist, setWishlist] = useState<string[]>([]);
@@ -41,6 +51,11 @@ export default function App() {
   const [currency, setCurrency] = useState('INR');
   const [language, setLanguage] = useState('EN');
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [currentView, setCurrentView] = useState<'home' | 'product' | 'wishlist'>('home');
+
+  // Filter Options
+  const colors = useMemo(() => ['All', ...new Set(products.map(p => p.color))], [products]);
+  const patterns = useMemo(() => ['All', ...new Set(products.map(p => p.pattern))], [products]);
 
   // Derived State
   const filteredProducts = useMemo(() => {
@@ -48,9 +63,15 @@ export default function App() {
       const matchesSearch = p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
                            p.category.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-      return matchesSearch && matchesCategory;
+      const matchesColor = selectedColor === 'All' || p.color === selectedColor;
+      const matchesPattern = selectedPattern === 'All' || p.pattern === selectedPattern;
+      return matchesSearch && matchesCategory && matchesColor && matchesPattern;
     });
-  }, [products, searchQuery, selectedCategory]);
+  }, [products, searchQuery, selectedCategory, selectedColor, selectedPattern]);
+
+  const wishlistedProducts = useMemo(() => {
+    return products.filter(p => wishlist.includes(p.id));
+  }, [products, wishlist]);
 
   const cartTotal = cart.reduce((sum, item) => sum + item.price * item.quantity, 0);
 
@@ -83,6 +104,40 @@ export default function App() {
     });
     addToast(`${product.name} added to bag!`);
     setIsCartOpen(true);
+  };
+
+  const handleBuyNow = (product: Product) => {
+    setCart(prev => {
+      const existing = prev.find(item => item.id === product.id);
+      if (existing) return prev;
+      return [...prev, { ...product, quantity: 1 }];
+    });
+    setIsCheckoutOpen(true);
+  };
+
+  const handleShare = async (product: Product) => {
+    const shareData = {
+      title: product.name,
+      text: `Check out this beautiful ${product.name} from RoziRoti!`,
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(window.location.href);
+        addToast('Link copied to clipboard!', 'info');
+      }
+    } catch (err) {
+      console.error('Error sharing:', err);
+    }
+  };
+
+  const handleViewProduct = (product: Product) => {
+    setSelectedProduct(product);
+    setCurrentView('product');
+    window.scrollTo(0, 0);
   };
 
   const updateCartQuantity = (id: string, delta: number) => {
@@ -183,19 +238,7 @@ export default function App() {
           </motion.div>
         )}
       </AnimatePresence>
-      <div className="bg-brand-maroon text-white py-1 px-4 text-center overflow-hidden relative">
-        <motion.div 
-          animate={{ x: [0, -20, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
-          className="text-[10px] font-bold uppercase tracking-[0.3em] flex items-center justify-center space-x-4"
-        >
-          <span>⚡ Flash Sale: Extra 15% OFF on all Sarees</span>
-          <span className="hidden md:inline">•</span>
-          <span className="hidden md:inline">Ends in: 02h 45m 12s</span>
-          <span className="hidden md:inline">•</span>
-          <span className="hidden md:inline">Use Code: FLASH15</span>
-        </motion.div>
-      </div>
+      <FlashSaleBanner />
       <Navbar 
         loyaltyPoints={loyaltyPoints}
         currency={currency}
@@ -211,84 +254,204 @@ export default function App() {
         setIsCartOpen={setIsCartOpen}
         setIsMenuOpen={setIsMenuOpen}
         setShowAdminLogin={setShowAdminLogin}
-        setSelectedCategory={setSelectedCategory}
+        setSelectedCategory={(cat) => {
+          setSelectedCategory(cat);
+          setSelectedColor('All');
+          setSelectedPattern('All');
+          setCurrentView('home');
+        }}
+        onViewWishlist={() => setCurrentView('wishlist')}
         toggleWishlist={toggleWishlist}
       />
 
       <main>
-        <Hero />
+        {currentView === 'home' ? (
+          <>
+            <FestivalBanner />
+            <Hero />
 
-        {/* Trending Section */}
-        <section className="py-24 px-4 md:px-8 bg-white">
-          <div className="max-w-7xl mx-auto">
-            <SectionHeading 
-              title="Trending Elegance" 
-              subtitle="Discover the most coveted designs from our latest collection, handcrafted for the modern woman."
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProducts.map(product => (
-                <ProductCard 
-                  key={product.id}
-                  product={product}
-                  onAddToCart={addToCart}
-                  onView={setSelectedProduct}
-                  onToggleWishlist={toggleWishlist}
-                  isWishlisted={wishlist.includes(product.id)}
+            {/* Filters & Trending Section */}
+            <section className="py-24 px-4 md:px-8 bg-white">
+              <div className="max-w-7xl mx-auto">
+                <SectionHeading 
+                  title="Trending Elegance" 
+                  subtitle="Discover the most coveted designs from our latest collection, handcrafted for the modern woman."
                 />
-              ))}
-            </div>
-          </div>
-        </section>
+                
+                {/* Filter Bar */}
+                <div className="flex flex-wrap gap-4 mb-12 p-6 bg-brand-beige/20 rounded-3xl border border-brand-gold/10">
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="text-[10px] uppercase font-bold tracking-widest text-brand-dark/40 mb-2 block">Color</label>
+                    <select 
+                      value={selectedColor}
+                      onChange={(e) => setSelectedColor(e.target.value)}
+                      className="w-full bg-white border border-brand-gold/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-maroon"
+                    >
+                      {colors.map(c => <option key={c} value={c}>{c}</option>)}
+                    </select>
+                  </div>
+                  <div className="flex-1 min-w-[200px]">
+                    <label className="text-[10px] uppercase font-bold tracking-widest text-brand-dark/40 mb-2 block">Pattern</label>
+                    <select 
+                      value={selectedPattern}
+                      onChange={(e) => setSelectedPattern(e.target.value)}
+                      className="w-full bg-white border border-brand-gold/10 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-maroon"
+                    >
+                      {patterns.map(p => <option key={p} value={p}>{p}</option>)}
+                    </select>
+                  </div>
+                  <button 
+                    onClick={() => { setSelectedColor('All'); setSelectedPattern('All'); setSelectedCategory('All'); setSearchQuery(''); }}
+                    className="self-end px-6 py-2 text-xs font-bold uppercase tracking-widest text-brand-maroon hover:underline"
+                  >
+                    Reset Filters
+                  </button>
+                </div>
+                
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {filteredProducts.map(product => (
+                    <ProductCard 
+                      key={product.id}
+                      product={product}
+                      onAddToCart={addToCart}
+                      onBuyNow={handleBuyNow}
+                      onView={handleViewProduct}
+                      onToggleWishlist={toggleWishlist}
+                      isWishlisted={wishlist.includes(product.id)}
+                      onShare={() => handleShare(product)}
+                    />
+                  ))}
+                </div>
+                {filteredProducts.length === 0 && (
+                  <div className="text-center py-24">
+                    <p className="text-brand-dark/40 italic">No products found matching your filters.</p>
+                  </div>
+                )}
+              </div>
+            </section>
 
-        {/* Value Proposition */}
-        <section className="py-24 bg-brand-beige/30 border-y border-brand-gold/10">
-          <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-3 gap-12">
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-brand-gold/10">
-                <Truck className="text-brand-maroon" size={32} />
-              </div>
-              <h3 className="text-xl font-serif text-brand-maroon">Express Delivery</h3>
-              <p className="text-brand-dark/60 text-sm leading-relaxed">Direct from Surat to your doorstep in 3-5 business days. Fast, reliable, and tracked.</p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-brand-gold/10">
-                <ShieldCheck className="text-brand-maroon" size={32} />
-              </div>
-              <h3 className="text-xl font-serif text-brand-maroon">Quality Guaranteed</h3>
-              <p className="text-brand-dark/60 text-sm leading-relaxed">Every piece undergoes a 3-step quality check to ensure you receive nothing but perfection.</p>
-            </div>
-            <div className="text-center space-y-4">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-brand-gold/10">
-                <RotateCcw className="text-brand-maroon" size={32} />
-              </div>
-              <h3 className="text-xl font-serif text-brand-maroon">Easy Returns</h3>
-              <p className="text-brand-dark/60 text-sm leading-relaxed">Not satisfied? No worries. Our 7-day hassle-free return policy has you covered.</p>
-            </div>
-          </div>
-        </section>
+            <Testimonials />
 
-        {/* Newsletter */}
-        <section className="py-24 px-4 md:px-8 maroon-gradient text-white overflow-hidden relative">
-          <div className="max-w-4xl mx-auto text-center relative z-10">
-            <Sparkles size={48} className="text-brand-gold mx-auto mb-8 animate-pulse" />
-            <h2 className="text-4xl md:text-6xl font-serif mb-6">Join the Elite Circle</h2>
-            <p className="text-white/70 mb-12 text-lg max-w-2xl mx-auto">Subscribe to receive early access to new drops, exclusive styling tips, and a special welcome gift.</p>
-            <div className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
-              <input 
-                type="email" 
-                placeholder="your@email.com" 
-                className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all"
-              />
-              <button className="gold-shimmer text-brand-dark px-8 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl">
-                Subscribe
-              </button>
+            <RecommendationSystem 
+              products={products}
+              onAddToCart={addToCart}
+              onBuyNow={handleBuyNow}
+              onView={handleViewProduct}
+              onToggleWishlist={toggleWishlist}
+              wishlist={wishlist}
+            />
+
+            {/* Value Proposition */}
+            <section className="py-24 bg-brand-beige/30 border-y border-brand-gold/10">
+              <div className="max-w-7xl mx-auto px-4 md:px-8 grid grid-cols-1 md:grid-cols-3 gap-12">
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-brand-gold/10">
+                    <Truck className="text-brand-maroon" size={32} />
+                  </div>
+                  <h3 className="text-xl font-serif text-brand-maroon">Express Delivery</h3>
+                  <p className="text-brand-dark/60 text-sm leading-relaxed">Direct from Surat to your doorstep in 3-5 business days. Fast, reliable, and tracked.</p>
+                </div>
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-brand-gold/10">
+                    <ShieldCheck className="text-brand-maroon" size={32} />
+                  </div>
+                  <h3 className="text-xl font-serif text-brand-maroon">Quality Guaranteed</h3>
+                  <p className="text-brand-dark/60 text-sm leading-relaxed">Every piece undergoes a 3-step quality check to ensure you receive nothing but perfection.</p>
+                </div>
+                <div className="text-center space-y-4">
+                  <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto shadow-sm border border-brand-gold/10">
+                    <RotateCcw className="text-brand-maroon" size={32} />
+                  </div>
+                  <h3 className="text-xl font-serif text-brand-maroon">Easy Returns</h3>
+                  <p className="text-brand-dark/60 text-sm leading-relaxed">Not satisfied? No worries. Our 7-day hassle-free return policy has you covered.</p>
+                </div>
+              </div>
+            </section>
+
+            {/* Newsletter */}
+            <section className="py-24 px-4 md:px-8 maroon-gradient text-white overflow-hidden relative">
+              <div className="max-w-4xl mx-auto text-center relative z-10">
+                <Sparkles size={48} className="text-brand-gold mx-auto mb-8 animate-pulse" />
+                <h2 className="text-4xl md:text-6xl font-serif mb-6">Join the Elite Circle</h2>
+                <p className="text-white/70 mb-12 text-lg max-w-2xl mx-auto">Subscribe to receive early access to new drops, exclusive styling tips, and a special welcome gift.</p>
+                <div className="flex flex-col md:flex-row gap-4 max-w-lg mx-auto">
+                  <input 
+                    type="email" 
+                    placeholder="your@email.com" 
+                    className="flex-1 bg-white/10 border border-white/20 rounded-2xl px-6 py-4 focus:outline-none focus:ring-2 focus:ring-brand-gold transition-all"
+                  />
+                  <button className="gold-shimmer text-brand-dark px-8 py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl">
+                    Subscribe
+                  </button>
+                </div>
+              </div>
+              {/* Decorative Background */}
+              <div className="absolute left-0 top-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-[100px]" />
+              <div className="absolute right-0 bottom-0 w-96 h-96 bg-brand-maroon/40 rounded-full blur-[120px]" />
+            </section>
+          </>
+        ) : currentView === 'wishlist' ? (
+          <section className="py-32 px-4 md:px-8 bg-white min-h-screen">
+            <div className="max-w-7xl mx-auto">
+              <div className="flex items-center justify-between mb-12">
+                <SectionHeading 
+                  title="Your Wishlist" 
+                  subtitle="Items you've saved for later. Bring home the elegance you love."
+                />
+                <button 
+                  onClick={() => setCurrentView('home')}
+                  className="text-xs font-bold uppercase tracking-widest text-brand-maroon flex items-center space-x-2 hover:underline"
+                >
+                  <ArrowRight className="rotate-180" size={16} />
+                  <span>Back to Shop</span>
+                </button>
+              </div>
+              
+              {wishlistedProducts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                  {wishlistedProducts.map(product => (
+                    <ProductCard 
+                      key={product.id}
+                      product={product}
+                      onAddToCart={addToCart}
+                      onBuyNow={handleBuyNow}
+                      onView={handleViewProduct}
+                      onToggleWishlist={toggleWishlist}
+                      isWishlisted={true}
+                      onShare={() => handleShare(product)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-32 bg-brand-beige/10 rounded-[40px] border border-brand-gold/5">
+                  <Heart className="mx-auto text-brand-gold/20 mb-6" size={64} />
+                  <h3 className="text-2xl font-serif text-brand-dark mb-4">Your wishlist is empty</h3>
+                  <p className="text-brand-dark/40 mb-8">Start exploring our collection and save your favorites!</p>
+                  <button 
+                    onClick={() => setCurrentView('home')}
+                    className="maroon-gradient text-white px-8 py-4 rounded-xl font-bold uppercase tracking-widest shadow-lg"
+                  >
+                    Explore Collection
+                  </button>
+                </div>
+              )}
             </div>
-          </div>
-          {/* Decorative Background */}
-          <div className="absolute left-0 top-0 w-64 h-64 bg-brand-gold/10 rounded-full blur-[100px]" />
-          <div className="absolute right-0 bottom-0 w-96 h-96 bg-brand-maroon/40 rounded-full blur-[120px]" />
-        </section>
+          </section>
+        ) : (
+          selectedProduct && (
+            <ProductPage 
+              product={selectedProduct}
+              onAddToCart={addToCart}
+              onBuyNow={handleBuyNow}
+              onShare={() => handleShare(selectedProduct)}
+              onToggleWishlist={toggleWishlist}
+              isWishlisted={wishlist.includes(selectedProduct.id)}
+              onBack={() => setCurrentView('home')}
+              allProducts={products}
+              onViewProduct={handleViewProduct}
+            />
+          )
+        )}
       </main>
 
       {/* Footer */}
@@ -346,6 +509,25 @@ export default function App() {
           </div>
         </div>
 
+        <div className="max-w-7xl mx-auto py-12 border-t border-white/10">
+          <div className="flex flex-col lg:flex-row items-center justify-between gap-8">
+            <div className="max-w-md text-center lg:text-left">
+              <h4 className="text-brand-gold font-bold uppercase tracking-widest text-xs mb-2">Inner Circle</h4>
+              <p className="text-white/60 text-sm">Join 10,000+ fashion enthusiasts for exclusive drops and styling secrets.</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-4 w-full max-w-lg">
+              <input 
+                type="email" 
+                placeholder="Enter your email" 
+                className="flex-1 bg-white/5 border border-white/10 rounded-xl px-6 py-3 focus:outline-none focus:border-brand-gold transition-colors text-sm"
+              />
+              <button className="bg-brand-gold text-brand-dark px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-white transition-all shadow-lg active:scale-95">
+                Subscribe
+              </button>
+            </div>
+          </div>
+        </div>
+
         <div className="max-w-7xl mx-auto pt-12 border-t border-white/10 flex flex-col md:flex-row justify-between items-center gap-8">
           <p className="text-white/20 text-xs">© 2026 RoziRoti by Ratna. All rights reserved. Designed with love in Surat.</p>
           <div className="flex items-center space-x-6 grayscale opacity-30 hover:grayscale-0 hover:opacity-100 transition-all">
@@ -361,6 +543,7 @@ export default function App() {
         product={selectedProduct}
         onClose={() => setSelectedProduct(null)}
         onAddToCart={addToCart}
+        onBuyNow={handleBuyNow}
         onToggleWishlist={toggleWishlist}
         isWishlisted={selectedProduct ? wishlist.includes(selectedProduct.id) : false}
       />
@@ -475,6 +658,23 @@ export default function App() {
           </div>
         )}
       </AnimatePresence>
+
+      <NotificationManager />
+
+      <MobileMenu 
+        isOpen={isMenuOpen}
+        onClose={() => setIsMenuOpen(false)}
+        onViewWishlist={() => setCurrentView('wishlist')}
+        onViewCart={() => setIsCartOpen(true)}
+        onAdminLogin={() => setShowAdminLogin(true)}
+        setSelectedCategory={(cat) => {
+          setSelectedCategory(cat);
+          setSelectedColor('All');
+          setSelectedPattern('All');
+          setCurrentView('home');
+        }}
+        loyaltyPoints={loyaltyPoints}
+      />
     </div>
   );
 }

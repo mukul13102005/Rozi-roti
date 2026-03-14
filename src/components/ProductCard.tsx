@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion } from 'framer-motion';
-import { Star, ShoppingBag, Heart, Eye } from 'lucide-react';
+import { Star, ShoppingBag, Heart, Eye, Share2 } from 'lucide-react';
 import { Product } from '../types';
 import { Badge } from './Badge';
 import { cn } from '../utils';
@@ -8,12 +8,16 @@ import { cn } from '../utils';
 interface ProductCardProps {
   product: Product;
   onAddToCart: (p: Product) => void;
+  onBuyNow: (p: Product) => void;
   onView: (p: Product) => void;
   onToggleWishlist: (id: string) => void;
   isWishlisted: boolean;
+  onShare?: () => void;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, onView, onToggleWishlist, isWishlisted }) => {
+export const ProductCard: React.FC<ProductCardProps> = ({ 
+  product, onAddToCart, onBuyNow, onView, onToggleWishlist, isWishlisted, onShare 
+}) => {
   const discount = Math.round(((product.originalPrice - product.price) / product.originalPrice) * 100);
 
   return (
@@ -64,6 +68,12 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
           >
             <ShoppingBag size={20} />
           </button>
+          <button 
+            onClick={(e) => { e.stopPropagation(); onShare?.(); }}
+            className="p-4 bg-white text-brand-maroon rounded-full hover:bg-brand-gold hover:text-brand-dark transition-all transform translate-y-4 group-hover:translate-y-0 duration-500 delay-150"
+          >
+            <Share2 size={20} />
+          </button>
         </div>
 
         {/* Scarcity Indicator */}
@@ -95,12 +105,20 @@ export const ProductCard: React.FC<ProductCardProps> = ({ product, onAddToCart, 
           )}
         </div>
 
-        <button 
-          onClick={() => onAddToCart(product)}
-          className="w-full mt-6 py-3 rounded-xl border border-brand-maroon text-brand-maroon font-bold uppercase text-xs tracking-widest hover:bg-brand-maroon hover:text-white transition-all duration-300"
-        >
-          Add to Bag
-        </button>
+        <div className="flex flex-col gap-2 mt-6">
+          <button 
+            onClick={() => onBuyNow(product)}
+            className="w-full py-3 rounded-xl bg-brand-maroon text-white font-bold uppercase text-xs tracking-widest hover:bg-brand-dark transition-all duration-300 shadow-lg shadow-brand-maroon/20 active:scale-95"
+          >
+            Buy Now
+          </button>
+          <button 
+            onClick={() => onAddToCart(product)}
+            className="w-full py-3 rounded-xl border border-brand-maroon/30 text-brand-maroon font-bold uppercase text-xs tracking-widest hover:bg-brand-maroon/5 transition-all duration-300 active:scale-95"
+          >
+            Add to Bag
+          </button>
+        </div>
       </div>
     </motion.div>
   );

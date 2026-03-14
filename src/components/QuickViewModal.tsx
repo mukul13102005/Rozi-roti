@@ -8,11 +8,14 @@ interface QuickViewModalProps {
   product: Product | null;
   onClose: () => void;
   onAddToCart: (p: Product) => void;
+  onBuyNow: (p: Product) => void;
   onToggleWishlist: (id: string) => void;
   isWishlisted: boolean;
 }
 
-export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose, onAddToCart, onToggleWishlist, isWishlisted }) => {
+export const QuickViewModal: React.FC<QuickViewModalProps> = ({ 
+  product, onClose, onAddToCart, onBuyNow, onToggleWishlist, isWishlisted 
+}) => {
   if (!product) return null;
 
   return (
@@ -89,19 +92,27 @@ export const QuickViewModal: React.FC<QuickViewModalProps> = ({ product, onClose
                   </div>
                 </div>
 
-                <div className="flex gap-4">
+                <div className="space-y-4">
                   <button 
-                    onClick={() => onAddToCart(product)}
-                    className="flex-1 maroon-gradient text-white py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all flex items-center justify-center group"
+                    onClick={() => onBuyNow(product)}
+                    className="w-full gold-shimmer text-brand-dark py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all flex items-center justify-center group active:scale-95"
                   >
-                    <ShoppingBag size={20} className="mr-2 group-hover:scale-110 transition-transform" /> Add to Bag
+                    Buy Now
                   </button>
-                  <button 
-                    onClick={() => onToggleWishlist(product.id)}
-                    className={`p-4 rounded-2xl border-2 transition-all ${isWishlisted ? 'bg-brand-maroon border-brand-maroon text-white' : 'border-brand-beige text-brand-maroon hover:border-brand-maroon'}`}
-                  >
-                    <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
-                  </button>
+                  <div className="flex gap-4">
+                    <button 
+                      onClick={() => onAddToCart(product)}
+                      className="flex-1 maroon-gradient text-white py-4 rounded-2xl font-bold uppercase tracking-widest shadow-xl hover:shadow-2xl transition-all flex items-center justify-center group active:scale-95"
+                    >
+                      <ShoppingBag size={20} className="mr-2 group-hover:scale-110 transition-transform" /> Add to Bag
+                    </button>
+                    <button 
+                      onClick={() => onToggleWishlist(product.id)}
+                      className={`p-4 rounded-2xl border-2 transition-all active:scale-95 ${isWishlisted ? 'bg-brand-maroon border-brand-maroon text-white' : 'border-brand-beige text-brand-maroon hover:border-brand-maroon'}`}
+                    >
+                      <Heart size={24} fill={isWishlisted ? "currentColor" : "none"} />
+                    </button>
+                  </div>
                 </div>
               </div>
 
